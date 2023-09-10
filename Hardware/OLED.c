@@ -193,6 +193,9 @@ void OLED_ShowNum(uint8_t Line, uint8_t Column, uint32_t Number, uint8_t Length)
 	}
 }
 
+
+
+
 /**
   * @brief  OLED显示数字（十进制，带符号数）
   * @param  Line 起始行位置，范围：1~4

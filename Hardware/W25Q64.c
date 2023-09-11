@@ -41,7 +41,7 @@ void W25Q64_WaitBusy(void)
 	}
 	MySPI_Stop();
 }
-
+//写入数据
 void W25Q64_PageProgram(uint32_t Address, uint8_t *DataArray, uint16_t Count)
 {
 	uint16_t i;
@@ -61,7 +61,7 @@ void W25Q64_PageProgram(uint32_t Address, uint8_t *DataArray, uint16_t Count)
 	
 	W25Q64_WaitBusy();
 }
-//清除数据
+//清除一个扇区的数据
 void W25Q64_SectorErase(uint32_t Address)
 {
 	W25Q64_WriteEnable();
@@ -75,7 +75,7 @@ void W25Q64_SectorErase(uint32_t Address)
 	
 	W25Q64_WaitBusy();
 }
-
+//读取数据放到dataArray中
 void W25Q64_ReadData(uint32_t Address, uint8_t *DataArray, uint32_t Count)
 {
 	uint32_t i;

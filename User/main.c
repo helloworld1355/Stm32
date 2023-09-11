@@ -58,8 +58,12 @@ int main(void)
 	OLED_ShowNum(4,3,Ree[0],8);
 	*/
 	
-	//W25Q64_SectorErase(0x000000);
-	/*测试*/
+	
+	
+	//删除第一扇区的数据，最后可删除
+	W25Q64_SectorErase(0x000000);
+	
+/*测试*/
 	
 /*读取所有的信息--可行*/
 	NowAdress = W25Q64_searchAd(Flash_size,0,Flash_size);
@@ -67,7 +71,6 @@ int main(void)
 	W25Q64_ReadData(0x000000,ArrayRead,1);
 	/*测试*/
 	
-		
 	/*测试*/
 	OLED_ShowString(1, 1, "Sp:");		
 	OLED_ShowString(1, 10, "Lv:");
@@ -141,6 +144,8 @@ void TIM1_UP_IRQHandler(void)
 		Serial_SendNumber(LI,2);
 		Serial_Printf("\tSpeed:");
 		Serial_SendNumber(Speed,3);
+		Serial_Printf("\tnum:");
+		Serial_SendNumber(NowAdress,3);
 		Serial_Printf("\r\n");
 		TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
 	}

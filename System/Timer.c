@@ -12,10 +12,10 @@ TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
 TIM_TimeBaseInitStructure.TIM_Period = 36000 - 1;    // 定时5秒
 TIM_TimeBaseInitStructure.TIM_Prescaler = 7200 - 1;
 TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
-TIM_TimeBaseInit(TIM1, &TIM_TimeBaseInitStructure);
+TIM_TimeBaseInit(TIM1, &TIM_TimeBaseInitStructure);	//时基单元初始化
 
 TIM_ClearFlag(TIM1, TIM_FLAG_Update);
-TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE);
+TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE);//使能中断输出
 
 NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 

@@ -103,7 +103,7 @@ uint32_t W25Q64_searchAd(uint32_t Flash_Size,uint32_t left,uint32_t right){
 		W_right = mid;
 		return W25Q64_searchAd(Flash_Size,W_left,W_right);
 	}else if(data[1]==0xFF){
-		return mid;
+		return mid+1;
 	}else{
 		W_left = mid;
 		return W25Q64_searchAd(Flash_Size,W_left,W_right);

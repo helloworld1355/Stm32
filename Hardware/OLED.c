@@ -220,7 +220,7 @@ void OLED_ShowSignedNum(uint8_t Line, uint8_t Column, int32_t Number, uint8_t Le
 	}
 	for (i = 0; i < Length; i++)							
 	{
-		OLED_ShowChar(Line, Column + i + 1, Number1 / OLED_Pow(10, Length - i - 1) % 10 + '0');
+		OLED_ShowChar(Line, Column + i +1, Number1 / OLED_Pow(10, Length - i - 1) % 10 + '0');    /////////////////////////////////
 	}
 }
 

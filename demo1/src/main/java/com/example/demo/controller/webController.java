@@ -19,30 +19,25 @@ public class webController {
     private WebSocketServer server;
 
     @GetMapping("/")
-    public String home(){
-        return "home";
-    }
-
-    @GetMapping("/com")
-    public String test(@RequestParam("comport") String comport, Model model){
+    public String test(){
         System.out.println("进入");
-        System.out.println(comport);
-        ComThread thread=new ComThread(server,comport);
-        model.addAttribute("comport",comport);
+        ComThread thread=new ComThread(server);
         thread.run();
         return "test";
     }
 
-    @ResponseBody
-    @GetMapping("/getallCom")
-    public List<String> getall(){
-        SerialPort[] commPorts = SerialPort.getCommPorts();
-        List<String> list = new ArrayList<>();
-        for (SerialPort commPort : commPorts){
-            list.add(commPort.getSystemPortName());
-        }
-        System.out.println(list);
-        return list;
-    }
+
+
+//    @ResponseBody
+//    @GetMapping("/getallCom")
+//    public List<String> getall(){
+//        SerialPort[] commPorts = SerialPort.getCommPorts();
+//        List<String> list = new ArrayList<>();
+//        for (SerialPort commPort : commPorts){
+//            list.add(commPort.getSystemPortName());
+//        }
+//        System.out.println(list);
+//        return list;
+//    }
 
 }

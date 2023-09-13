@@ -7,6 +7,7 @@ import java.io.IOException;
 /**
  * ComThread线程的子线程，因为ComThread进入了串口监听就不能结束，所以在串口监听写这个线程，
  * 这个线程作用是发送串口数据
+ *
  */
 public class ComThread_son implements Runnable{
     private final String data;
@@ -18,6 +19,7 @@ public class ComThread_son implements Runnable{
     }
     @Override
     public void run(){
+//        System.out.println("进入子线程");
         try {
             server.sendToAll(data);
         } catch (IOException e) {

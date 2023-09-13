@@ -10,17 +10,16 @@ import com.example.demo.utils.ComUtil;
 public class ComThread implements Runnable{
 
     private final WebSocketServer server;
-    private final String comport;
 
-    public ComThread(WebSocketServer server,String comport){
+    public ComThread(WebSocketServer server){
         this.server=server;
-        this.comport=comport;
     }
 
     @Override
     public void run(){
         System.out.println("进入父线程");
         ComUtil test=new ComUtil(server);
-        test.SingleComport(comport);
+        //所有串口
+        test.AllComport();
     }
 }

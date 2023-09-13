@@ -9,7 +9,7 @@ TIM_InternalClockConfig(TIM1);
 TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
 TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-TIM_TimeBaseInitStructure.TIM_Period = 36000 - 1;    // 定时5秒
+TIM_TimeBaseInitStructure.TIM_Period = 10000 - 1;    // 定时5秒
 TIM_TimeBaseInitStructure.TIM_Prescaler = 7200 - 1;
 TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
 TIM_TimeBaseInit(TIM1, &TIM_TimeBaseInitStructure);	//时基单元初始化

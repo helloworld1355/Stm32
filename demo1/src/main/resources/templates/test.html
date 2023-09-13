@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My WebSocket</title>
+    <link rel="stylesheet" th:href="@{/node_modules/layui/dist/css/layui.css}" />
+    <link rel="script" th:src="@{/node_modules/layui/dist/font/layui.js}" />
+</head>
+
+<body style="background-color: #c2c2c2">
+<div class="layui-row layui-col-space5">
+    <div class="layui-col-md4 contain" >
+        <div class="bag">波特率：9600</div>
+    </div>
+    <div class="layui-col-md4 contain">
+        <div class="bag">接收数据：</div>
+    </div>
+    <div class="layui-col-md4 contain">
+        <div class="bag">串口：[[${comport}]]</div>
+    </div>
+</div>
+<div id="message" class="message"></div>
+
+
+<style>
+    .contain{
+        height: 80px;
+        display: flex; /* 使用Flexbox布局 */
+        align-items: center;
+        justify-items: center;
+        background-color: #16baaa;
+
+    }
+    .bag{
+        /*background-color: #16baaa;*/
+        flex: 1;
+        /*height: 100%;*/
+        text-align: center;
+        font-size: 30px;
+    }
+    .message{
+        text-align: center;
+        font-size: 20px;
+    }
+</style>
+
+
+</body>
+
+<script type="text/javascript">
+    var websocket = null;
+
+    //判断当前浏览器是否支持WebSocket, 主要此处要更换为自己的地址
+    if ('WebSocket' in window) {
+        websocket = new WebSocket("ws://localhost/websocket/1");
+    } else {
+        alert('Not support websocket')
+    }
+
+    //连接发生错误的回调方法
+    websocket.onerror = function() {
+        setMessageInnerHTML("error");
+    };
+
+    //连接成功建立的回调方法
+    websocket.onopen = function(event) {
+        setMessageInnerHTML("open");
+    }
+
+    //接收到消息的回调方法
+    websocket.onmessage = function(event) {
+        setMessageInnerHTML(event.data);
+    }
+
+    //连接关闭的回调方法
+    websocket.onclose = function() {
+        setMessageInnerHTML("close");
+    }
+
+    //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+    window.onbeforeunload = function() {
+        websocket.close();
+    }
+
+    //将消息显示在网页上
+    function setMessageInnerHTML(innerHTML) {
+        // 获取当前时间
+        const currentTime = new Date();
+        // 获取年、月、日、小时、分钟和秒
+        const year = currentTime.getFullYear();
+        const month = (currentTime.getMonth() + 1).toString().padStart(2, '0'); // 月份从0开始，需要加1
+        const day = currentTime.getDate().toString().padStart(2, '0');
+        const hours = currentTime.getHours().toString().padStart(2, '0');
+        const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+        const seconds = currentTime.getSeconds().toString().padStart(2, '0');
+
+        // 构建要显示的完整内容，包括日期、时间和消息
+        const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        const contentWithDateTime = `${formattedDateTime}: &nbsp;&nbsp;${innerHTML}`;
+        document.getElementById('message').innerHTML += contentWithDateTime + '<br/>';
+    }
+
+
+
+
+    //关闭连接
+    function closeWebSocket() {
+        websocket.close();
+    }
+
+    //发送消息
+    function send() {
+        var message = document.getElementById('text').value;
+        websocket.send(message);
+    }
+</script>
+</html>

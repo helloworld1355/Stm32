@@ -17,7 +17,6 @@ uint8_t Speed;												//电机转速
 uint8_t LI;														//光强
 uint16_t ADValue;											//ADC的值
 uint8_t KeySpeed;											//按钮控制增加的转速
-uint8_t *ArrayWrite;									//写入存储部件的数组
 uint8_t ArrayRead[1];										//读存储部件
 uint32_t NowAdress;										//最后一个写入数据的地址
 uint32_t num;													//W25Q64数据的第几个
@@ -27,9 +26,6 @@ static uint8_t high_LI = 80;					//高于这个值就不触发电机
 static float maxSpeed=100.0;					//最大转速
 static uint32_t Flash_size = 0xffffff;//存储部件W25Q64最大存储容量
 
-uint8_t MID;
-uint16_t DID;
-
 int main(void)
 {
 	OLED_Init();												//OLED初始化
@@ -38,27 +34,13 @@ int main(void)
 	AD_Init();													//adc初始化
 	LightSensor_Init();									//光敏传感器初始化
 	Serial_Init();											//串口初始化
-	Timer_Init();												//定时器初始化
+	Timer_Init();												//定时中断初始化
 	W25Q64_Init();											//存储部件初始化
 	
 	KeySpeed=0;													//初始化按钮控制转速
 	Speed=0;														//初始化转速
 	num=0;															//存储数量重置
 /*测试*/
-	//ArrayRead = (uint8_t *)malloc(2 * sizeof(uint8_t));	//初始化读取数组，先读取存储头两位--存储部件0x000000前三位是扇区号，第四位是页号，后两位是页内地址。
-	/*拿到最后一个写入数据的地址，并从之后开始写入*/
-	/*
-	uint8_t Arr[1]={2};
-	W25Q64_PageProgram(0x000000,Arr,1);
-	OLED_ShowNum(3,1,Arr[0],8);
-	
-		
-	uint8_t Ree[1];
-	W25Q64_ReadData(0x000000,Ree,1);
-	OLED_ShowNum(4,3,Ree[0],8);
-	*/
-	
-	
 	
 	//删除第一扇区的数据，最后可删除
 	W25Q64_SectorErase(0x000000);
@@ -91,13 +73,13 @@ int main(void)
 		if (KeyNum == 1)
 		{
 			KeySpeed+=10;																	
-			if(KeySpeed>maxSpeed) {
-				Speed=maxSpeed;
-				KeySpeed=maxSpeed;
+			if(KeySpeed > maxSpeed) {
+				Speed = maxSpeed;
+				KeySpeed =  maxSpeed;
 			}			
 		}else if(KeyNum == 2){
 			
-			if(KeySpeed<10) {
+			if(KeySpeed < 10) {
 				Speed=0;
 				KeySpeed=0;
 			}else KeySpeed -= 10;
@@ -112,11 +94,11 @@ int main(void)
 		
 		/*  判断光照强度是否到达某一界限，low_LI、high_LI  */
 		if(LI<low_LI){
-			Speed=20+low_LI-LI+KeySpeed;
+			Speed = 20+low_LI-LI+KeySpeed;
 			if(Speed>=maxSpeed) Speed=maxSpeed;
-		}else if(LI>low_LI) Speed=0+KeySpeed;
+		}else if(LI>high_LI) Speed=0;
+		if(LI>low_LI) Speed=0+KeySpeed;
 		
-		if(LI>high_LI) Speed=0;
 		
 		/* 在OLED上显示信息 */		
 		Motor_SetSpeed(Speed);
@@ -134,18 +116,20 @@ void TIM1_UP_IRQHandler(void)
 {
 	if (TIM_GetITStatus(TIM1, TIM_IT_Update) == SET)
 	{
+		uint8_t array[1];
 		//写入W25Q64 通过NowAdress写入	
-		W25Q64_PageProgram(NowAdress,&LI,1);
+		W25Q64_PageProgram(NowAdress % Flash_size,&LI,1);
+		W25Q64_ReadData(NowAdress % Flash_size,array,1);
 		NowAdress+=1;
 		
 		
 		//发送串口数据
 		Serial_Printf("LV:");
-		Serial_SendNumber(LI,2);
+		Serial_SendNumber(array[0],2);
 		Serial_Printf("\tSpeed:");
 		Serial_SendNumber(Speed,3);
 		Serial_Printf("\tnum:");
-		Serial_SendNumber(NowAdress,3);
+		Serial_SendNumber(NowAdress,8);
 		Serial_Printf("\r\n");
 		TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
 	}

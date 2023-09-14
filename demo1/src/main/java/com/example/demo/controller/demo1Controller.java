@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.entity.Demo1;
 import com.example.demo.service.impl.demo1impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,9 +25,16 @@ public class demo1Controller {
     public void submit(@RequestBody List<String> data){
         System.out.println("接收到data::"+ data);
         server.addList(data);
-
-
     }
 
+    @GetMapping("/hisdata")
+    public String hisData(){
+        return "hisdata";
+    }
 
+    @ResponseBody
+    @PostMapping("/getAll")
+    public List<Demo1> getAll(){
+        return server.getAll();
+    }
 }

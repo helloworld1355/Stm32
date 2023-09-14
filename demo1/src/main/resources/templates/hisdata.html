@@ -1,0 +1,286 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>My WebSocket</title>
+  <link rel="stylesheet" th:href="@{/node_modules/layui/dist/css/layui.css}" />
+  <script  th:src="@{/node_modules/layui/dist/layui.js}" ></script>
+
+</head>
+
+<body style="background-color: #c2c2c2;">
+<!--  功能  -->
+<div class="layui-row layui-col-space5" style="height: 10%">
+  <div class="layui-col-md3 contain" >
+    <div class="bag">波特率：9600</div>
+  </div>
+  <div class="layui-col-md3 contain">
+    <div class="bag">数据位：8</div>
+  </div>
+  <div class="layui-col-md3 contain">
+    <div class="bag">停止位：1</div>
+  </div>
+  <div class="layui-col-md3 contain">
+    <div class="bag">模式：文本模式</div>
+  </div>
+</div>
+
+<!--  功能模块  -->
+<div class="layui-row layui-col-space5" style="height: 10%">
+  <div class="layui-col-md4 contain" >
+    <div class="contain_selectAll">
+      <input class="contain_input" type="checkbox" id="selectAll"> 全选 <label for="selectAll"> </label>
+    </div>
+    <button class="contain_btn" id="hisBtn">
+      查看历史数据
+    </button>
+  </div>
+
+  <div class="layui-col-md4 contain">
+    <button type="button" class="contain_btn" id="charBtn" style="margin-left: 180px;margin-right: 40px">
+      查看选中数据折线图
+    </button>
+  </div>
+  <div class="layui-col-md4 contain">
+    <button type="button" class="contain_btn" id="clearBtn" style="margin: 0px 80px">
+      清空折线图
+    </button>
+  </div>
+
+
+</div>
+<!--    串口数据与图     -->
+<div class="dataContainer">
+  <div id="dataContainer" class="data">
+  </div>
+  <div class="canvasContainer">
+    <canvas id="lineChart" class="canvas-in"></canvas>
+  </div>
+</div>
+
+<style>
+  body{
+    background-color: #c2c2c2;
+    height: 98vh;
+    margin: 0;
+  }
+  .contain{
+    height: 100%;
+    display: flex; /* 使用Flexbox布局 */
+    align-items: center;
+    justify-items: center;
+    background-color: #16baaa;
+    text-align: center;
+  }
+  .bag{
+    flex: 1;
+    height: 100%;
+    text-align: center;
+    font-size: 30px;
+  }
+
+  .contain_btn{
+    flex: 1;
+    height: 60%;
+
+  }
+  .contain_selectAll{
+    flex: 1;
+    font-size: 20px;
+  }
+  .contain_input{
+    width: 20px; /* 设置复选框的宽度 */
+    height: 20px; /* 设置复选框的高度 */
+  }
+
+  .dataContainer{
+    height: 80%;
+
+    display: flex; /* 使用flexbox布局 */
+    width: 100%;
+    /*height: 80vh; !* 设置高度，这里使用视窗高度的80%作为示例，您可以根据需求调整 *!*/
+  }
+  .data{
+    flex: 1;
+    overflow: auto;
+  }
+  .canvasContainer{
+    flex: 1.5;
+    overflow: auto;
+    justify-content: flex-start;
+  }
+  .canvas-in{
+    width: 100%;
+    height: 100%;
+    margin-top: 90px;
+    margin-right: 20px;
+  }
+  .custom-checkbox{
+    height: 22px;
+    width: 22px;
+    margin-top: 10px;
+    margin-left: 5%;
+  }
+
+</style>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!--    websokect接发送数据  -->
+<script type="text/javascript">
+  var dataContainer = document.getElementById("dataContainer");
+  var submitButton = document.getElementById("submitBtn");
+  var idCounter = 1; // 初始ID为1
+  var websocket = null;
+  var charButton = document.getElementById("charBtn");
+  var clearButton = document.getElementById("clearBtn");
+  var hisButton = document.getElementById("hisBtn");
+  var myLineChart = null;
+
+  //将消息显示在网页上
+  layui.use('layer',function () {
+    var layer = layui.layer;
+    var $ = layui.jquery;
+    $(document).ready(function (){
+      $.ajax({
+        type: 'POST',
+        url: '/getAll',
+        success: function (res){
+          console.log("res:",res);
+          console.log("res length",res.length);
+          for (let i = 0; i < res.length; i++) {
+            // 构建要显示的完整内容，包括日期、时间和消息
+            // 创建一个Date对象
+            var date = new Date(res[i].createtime);
+
+            // 获取年、月、日、时、分、秒
+            var year = date.getFullYear();
+            var month = (date.getMonth() + 1).toString().padStart(2, '0'); // 月份从0开始，需要加1
+            var day = date.getDate().toString().padStart(2, '0');
+            var hours = date.getHours().toString().padStart(2, '0');
+            var minutes = date.getMinutes().toString().padStart(2, '0');
+            var seconds = date.getSeconds().toString().padStart(2, '0');
+
+            // 构建新的日期时间格式
+            var formattedDateTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+
+            var dataItem = {
+              id: idCounter++,
+              createtime: formattedDateTime,
+              lv:"lv:"+res[i].lv,
+              speed:"speed:"+res[i].speed,
+              num:"num:"+res[i].num
+            };
+            // console.log("item:",dataItem);
+
+            //选择框
+            var checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.name = "selectedItems";
+            checkbox.value = dataItem.id;
+            checkbox.className = "custom-checkbox";
+            checkbox.id = "checkbox_" + dataItem.id;
+
+            //数据行
+            var label = document.createElement("label");
+            label.innerHTML = dataItem.createtime + '&nbsp;&nbsp' + dataItem.lv + '&nbsp;&nbsp' + dataItem.speed + '&nbsp;&nbsp' + dataItem.num;
+            label.setAttribute("for", "checkbox_" + dataItem.id);
+            label.style.fontSize = "20px"; // 设置字体大小
+
+            //插入数据
+            dataContainer.appendChild(checkbox);
+            dataContainer.appendChild(label);
+            dataContainer.appendChild(document.createElement("br"));
+          }
+        }
+      })
+    })
+
+
+    //全选框
+    var selectAllCheckbox = document.getElementById("selectAll");
+    // 全选复选框状态改变时的事件处理程序
+    selectAllCheckbox.addEventListener("change", function () {
+      var checkboxes = dataContainer.querySelectorAll("input[type='checkbox']");
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = selectAllCheckbox.checked;
+      }
+    });
+
+    //生成折线图
+    charButton.addEventListener("click", function () {
+      var datas = [];
+      // 获取选中的选择框的值
+      var checkboxes = document.getElementsByName("selectedItems");
+      for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+          var id = checkboxes[i].value;
+          var label = document.querySelector("label[for='checkbox_" + id + "']").textContent;
+
+          datas.push(label);
+        }
+      }
+      var lightIntensityData = []; // 光照强度数据
+      var timeData = []; // 时间数据
+
+      //数据格式：['2023-09-14 11:40:43', 'LV:32', 'Speed:038', 'num:00001472\n']
+      for (var n = 0; n < datas.length; n++) {
+        console.log("进入：", datas[n]);
+        var list = datas[n].split('  ')
+        console.log("list:", list);
+        timeData.push(list[0]);
+        lightIntensityData.push(list[1].split(':')[1]);
+
+      }
+      console.log("lv:", lightIntensityData);
+      console.log("time:", timeData);
+
+      // 获取Canvas元素
+      var ctx = document.getElementById('lineChart').getContext('2d');
+
+      // 创建数据集
+      var data = {
+        labels: timeData, // X轴标签
+        datasets: [{
+          label: '光照强度',
+          data: lightIntensityData, // Y轴数据
+          borderColor: 'blue', // 折线颜色
+          borderWidth: 2, // 折线宽度
+          fill: true // 不填充区域
+        }]
+      };
+
+      // 创建折线图
+      myLineChart = new Chart(ctx, {
+        type: 'line', // 指定图表类型为折线图
+        data: data,
+        options: {
+          responsive: true, // 禁用响应式
+          scales: {
+            y: {
+              beginAtZero: true // Y轴从零开始
+            }
+          }
+        }
+      });
+    })
+
+    //清空折线图
+    clearButton.addEventListener("click", function () {
+      myLineChart.destroy();
+    });
+
+  })
+</script>
+
+<!--    生成折线图   -->
+<script>
+  // 在这里编写绘制折线图的JavaScript代码
+  //获取选择框数据
+
+
+</script>
+
+
+</body>
+</html>

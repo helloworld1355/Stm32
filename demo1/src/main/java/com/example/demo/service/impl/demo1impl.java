@@ -69,4 +69,10 @@ public class demo1impl implements demo1Service {
         }
     }
 
+    @Override
+    public List<Demo1> getAll(){
+        QueryWrapper<Demo1> wrapper = new QueryWrapper<>();
+        return mapper.selectList(wrapper.select());
+    }
+
 }

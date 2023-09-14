@@ -10,34 +10,46 @@
 <body style="background-color: #c2c2c2;">
 <!--  功能  -->
 <div class="layui-row layui-col-space5" style="height: 10%">
-    <div class="layui-col-md4 contain" >
+    <div class="layui-col-md3 contain" >
         <div class="bag">波特率：9600</div>
     </div>
-    <div class="layui-col-md4 contain">
-        <div class="bag">接收数据：</div>
+    <div class="layui-col-md3 contain">
+        <div class="bag">数据位：8</div>
     </div>
-    <div class="layui-col-md4 contain">
-        <div class="bag">串口</div>
+    <div class="layui-col-md3 contain">
+        <div class="bag">停止位：1</div>
+    </div>
+    <div class="layui-col-md3 contain">
+        <div class="bag">模式：文本模式</div>
     </div>
 </div>
 
 <!--  功能模块  -->
 <div class="layui-row layui-col-space5" style="height: 10%">
-    <div class="layui-col-md6 contain" >
+    <div class="layui-col-md4 contain" >
         <div class="contain_selectAll">
             <input class="contain_input" type="checkbox" id="selectAll"> 全选 <label for="selectAll"> </label>
         </div>
         <button class="contain_btn" id="submitBtn">
            提交选中的数据
         </button>
-
+        <button class="contain_btn" id="hisBtn">
+            查看历史数据
+        </button>
     </div>
 
-    <div class="layui-col-md6 contain">
-        <button type="button" class="contain_btn" id="charBtn">
+    <div class="layui-col-md4 contain">
+        <button type="button" class="contain_btn" id="charBtn" style="margin-left: 180px;margin-right: 40px">
             查看选中数据折线图
         </button>
     </div>
+    <div class="layui-col-md4 contain">
+        <button type="button" class="contain_btn" id="clearBtn" style="margin: 0px 80px">
+            清空折线图
+        </button>
+    </div>
+
+
 </div>
 <!--    串口数据与图     -->
    <div class="dataContainer">
@@ -68,16 +80,11 @@
         text-align: center;
         font-size: 30px;
     }
-    .message{
-        text-align: center;
-        font-size: 20px;
-    }
-
 
     .contain_btn{
         flex: 1;
         height: 60%;
-        margin-left: 10%;
+
     }
     .contain_selectAll{
         flex: 1;
@@ -98,20 +105,28 @@
     .data{
         flex: 1;
         overflow: auto;
-        padding-left: 5%;
     }
     .canvasContainer{
-        flex: 1;
-        /*width: 45%;*/
-        /*height: 80%;*/
+        flex: 1.5;
         overflow: auto;
+        justify-content: flex-start;
     }
     .canvas-in{
         width: 100%;
         height: 100%;
+        margin-top: 90px;
+        margin-right: 20px;
+    }
+    .custom-checkbox{
+        height: 22px;
+        width: 22px;
+        margin-top: 10px;
+        margin-left: 5%;
     }
 
 </style>
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!--    websokect接发送数据  -->
@@ -120,8 +135,24 @@
     var submitButton = document.getElementById("submitBtn");
     var idCounter = 1; // 初始ID为1
     var websocket = null;
-    var charButton = document.getElementById("charBtn")
+    var charButton = document.getElementById("charBtn");
+    var clearButton = document.getElementById("clearBtn");
+    var hisButton = document.getElementById("hisBtn");
+    var myLineChart = null;
 
+    hisButton.addEventListener("click" ,function (){
+        layui.use('layer',function (){
+            var layer = layui.layer;
+            var $ = layui.jquery;
+            $.ajax({
+                type: 'GET',
+                url: '/hisdata',
+                success: function (){
+                    window.location.href = "/hisdata"
+                }
+            })
+        })
+    })
 
     //判断当前浏览器是否支持WebSocket, 主要此处要更换为自己的地址
     if ('WebSocket' in window) {
@@ -196,7 +227,7 @@
     // 全选复选框状态改变时的事件处理程序
     selectAllCheckbox.addEventListener("change", function () {
         var checkboxes = dataContainer.querySelectorAll("input[type='checkbox']");
-        for (var i = 2; i < checkboxes.length; i++) {
+        for (var i = 1; i < checkboxes.length; i++) {
             checkboxes[i].checked = selectAllCheckbox.checked;
         }
     });
@@ -229,13 +260,6 @@
         console.log("lv:",lightIntensityData);
         console.log("time:",timeData);
 
-
-
-
-        // 在这里编写绘制折线图的JavaScript代码
-        for (let i = 0; i < datas.length; i++) {
-            // lightIntensityData.push(datas.)
-        }
         // 获取Canvas元素
         var ctx = document.getElementById('lineChart').getContext('2d');
 
@@ -247,16 +271,16 @@
                 data: lightIntensityData, // Y轴数据
                 borderColor: 'blue', // 折线颜色
                 borderWidth: 2, // 折线宽度
-                fill: false // 不填充区域
+                fill: true // 不填充区域
             }]
         };
 
         // 创建折线图
-        var myLineChart = new Chart(ctx, {
+        myLineChart = new Chart(ctx, {
             type: 'line', // 指定图表类型为折线图
             data: data,
             options: {
-                responsive: false, // 禁用响应式
+                responsive: true, // 禁用响应式
                 scales: {
                     y: {
                         beginAtZero: true // Y轴从零开始
@@ -264,8 +288,12 @@
                 }
             }
         });
-
     })
+
+    //清空折线图
+    clearButton.addEventListener("click", function (){
+        myLineChart.destroy();
+    });
 
 
     //提交选中数据传给后端

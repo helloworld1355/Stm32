@@ -73,6 +73,17 @@
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.5.3.1</version> <!-- 根据你的需求选择版本 -->
         </dependency>
+<!--        图库-->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.3</version> <!-- 根据需要更改版本号 -->
+        </dependency>
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jcommon</artifactId>
+            <version>1.0.24</version> <!-- 根据需要更改版本号 -->
+        </dependency>
 
 
     </dependencies>

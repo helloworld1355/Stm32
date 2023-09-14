@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface demo1Service {
 
-    public Boolean addList(List<String> list);
+    void addList(List<String> list);
 }

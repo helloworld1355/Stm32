@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <script>
+      // 在这里编写绘制折线图的JavaScript代码
+      var lightIntensityData = [23, 43, 23, 52, 35]; // 光照强度数据
+      var timeData = ["2023-09-14 08:32:44", "2023-09-14 08:32:49", "2023-09-14 08:33:14", "2023-09-14 08:33:24", "2023-09-14 08:33:44"]; // 时间数据
+      // 获取Canvas元素
+      var ctx = document.getElementById('lineChart').getContext('2d');
+
+      // 创建数据集
+      var data = {
+        labels: timeData, // X轴标签
+        datasets: [{
+          label: '光照强度',
+          data: lightIntensityData, // Y轴数据
+          borderColor: 'blue', // 折线颜色
+          borderWidth: 2, // 折线宽度
+          fill: false // 不填充区域
+        }]
+      };
+
+      // 创建折线图
+      var myLineChart = new Chart(ctx, {
+        type: 'line', // 指定图表类型为折线图
+        data: data,
+        options: {
+          responsive: false, // 禁用响应式
+          scales: {
+            y: {
+              beginAtZero: true // Y轴从零开始
+            }
+          }
+        }
+      });
+
+    </script>
+</body>
+</html>

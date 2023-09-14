@@ -43,7 +43,7 @@ int main(void)
 /*测试*/
 	
 	//删除第一扇区的数据，最后可删除
-	W25Q64_SectorErase(0x000000);
+	//W25Q64_SectorErase(0x000000);
 	
 /*测试*/
 	
